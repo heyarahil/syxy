@@ -68,7 +68,7 @@
         let totalScrollHeight = 0;
         let columns = 3;
         let rowsPerColumn = 0;
-        const scrollSpeed = 3.8;
+        const scrollSpeed = 3.1;
         const desktopSpacingFactor = 0.82;
         const mobileSpacingFactor = 0.78;
         const mobileBreakpoint = 820;
@@ -76,13 +76,11 @@
         const maxColumns = 5;
         const desktopTargetColumnWidth = 300;
         const mobileTargetColumnWidth = 180;
-        const returnEase = 0.06;
-        const damping = 0.88;
-        const baseFrameDuration = 1000 / 60;
-        const scatterRadius = 120;
-        const minScatterForce = 12;
-        const maxScatterForce = 36;
-        const scatterCooldownFrames = 14;
+        const returnEase = 0.03;
+        const damping = 0.92;
+        const mobileColumnCap = 2;
+        const mobileRowPadding = 2;
+        const desktopRowPadding = 6;
 
         class LetterParticle {
             constructor(char, x, y, columnIndex) {
@@ -97,9 +95,9 @@
                 this.scatterTimer = 0;
             }
 
-            update(timeScale = 1) {
+            update() {
                 const scrollDir = getColumnDirection(this.columnIndex);
-                this.homeY += scrollDir * scrollSpeed * timeScale;
+                this.homeY += scrollDir * scrollSpeed;
 
                 if (this.homeY > height + rowSpacing) {
                     this.homeY -= totalScrollHeight;
@@ -110,16 +108,15 @@
                 }
 
                 if (this.scatterTimer > 0) {
-                    this.scatterTimer -= timeScale;
+                    this.scatterTimer--;
                 } else {
                     const dx = this.homeX - this.x;
                     const dy = this.homeY - this.y;
                     const distance = sqrt(dx * dx + dy * dy);
 
                     if (distance > 0.5) {
-                        const ease = returnEase * timeScale;
-                        this.velX += dx * ease;
-                        this.velY += dy * ease;
+                        this.velX += dx * returnEase;
+                        this.velY += dy * returnEase;
                     } else {
                         this.x = this.homeX;
                         this.y = this.homeY;
@@ -128,26 +125,24 @@
                     }
                 }
 
-                const dampingFactor = Math.pow(damping, timeScale);
-                this.velX *= dampingFactor;
-                this.velY *= dampingFactor;
+                this.velX *= damping;
+                this.velY *= damping;
 
-                this.x += this.velX * timeScale;
-                this.y += this.velY * timeScale;
+                this.x += this.velX;
+                this.y += this.velY;
             }
 
-            scatter(mouseX, mouseY, timeScale = 1) {
+            scatter(mouseX, mouseY) {
                 const dx = this.x - mouseX;
                 const dy = this.y - mouseY;
                 const distance = sqrt(dx * dx + dy * dy);
 
-                if (distance < scatterRadius && this.scatterTimer <= 0) {
+                if (distance < 60 && this.scatterTimer === 0) {
                     const angle = atan2(dy, dx);
-                    const intensity = 1 - distance / scatterRadius;
-                    const force = minScatterForce + intensity * (maxScatterForce - minScatterForce);
-                    this.velX += cos(angle) * force * timeScale;
-                    this.velY += sin(angle) * force * timeScale;
-                    this.scatterTimer = scatterCooldownFrames;
+                    const force = random(8, 24);
+                    this.velX += cos(angle) * force;
+                    this.velY += sin(angle) * force;
+                    this.scatterTimer = 24;
                 }
             }
 
@@ -172,7 +167,9 @@
 
         function setup() {
             createCanvas(windowWidth, windowHeight);
-            pixelDensity(Math.min(window.devicePixelRatio || 1, 1.5));
+            const devicePixelRatioSafe = window.devicePixelRatio || 1;
+            const forceLowDensity = windowWidth <= mobileBreakpoint ? 1 : Math.min(devicePixelRatioSafe, 1.5);
+            pixelDensity(forceLowDensity);
             frameRate(60);
             fontSize = windowWidth * 0.05;
             fontSize = constrain(fontSize, 28, 110);
@@ -221,18 +218,21 @@
                     }
                 }
             }
+
+            if (typeof window !== "undefined") {
+                console.info(
+                    `[syxy] particles: ${particles.length} (${columns} columns × ${rowsPerColumn} rows)`
+                );
+            }
         }
 
         function draw() {
             background(0);
 
-            const frameScale = deltaTime ? deltaTime / baseFrameDuration : 1;
-            const adjustedScale = constrain(frameScale, 0.5, 3);
-
             for (const p of particles) {
-                p.update(adjustedScale);
+                p.update();
                 if (mouseX > 0 && mouseY > 0) {
-                    p.scatter(mouseX, mouseY, adjustedScale);
+                    p.scatter(mouseX, mouseY);
                 }
                 p.display();
             }
@@ -250,7 +250,7 @@
             const isMobile = width <= mobileBreakpoint;
             const targetColumnWidth = isMobile ? mobileTargetColumnWidth : desktopTargetColumnWidth;
             const estimatedColumns = Math.max(minColumns, Math.round(width / targetColumnWidth));
-            columns = constrain(isMobile ? Math.min(estimatedColumns, 3) : estimatedColumns, minColumns, maxColumns);
+            columns = constrain(isMobile ? Math.min(estimatedColumns, mobileColumnCap) : estimatedColumns, minColumns, maxColumns);
             columnWidth = width / columns;
 
             fontSize = columnWidth * (isMobile ? 0.8 : 0.65);
@@ -260,7 +260,7 @@
 
             const spacingFactor = isMobile ? mobileSpacingFactor : desktopSpacingFactor;
             rowSpacing = fontSize * spacingFactor;
-            rowsPerColumn = Math.ceil(height / rowSpacing) + (isMobile ? 4 : 6);
+            rowsPerColumn = Math.ceil(height / rowSpacing) + (isMobile ? mobileRowPadding : desktopRowPadding);
             totalScrollHeight = rowSpacing * rowsPerColumn;
             createParticles();
         }
