@@ -78,9 +78,10 @@
         const mobileTargetColumnWidth = 180;
         const returnEase = 0.03;
         const damping = 0.92;
-        const mobileColumnCap = 2;
-        const mobileRowPadding = 2;
+        const mobileColumnCap = 1;
+        const mobileRowPadding = 1;
         const desktopRowPadding = 6;
+        const mobileParticleLimit = 420;
 
         class LetterParticle {
             constructor(char, x, y, columnIndex) {
@@ -203,11 +204,13 @@
             const { centers, totalWidth } = computePhraseLayout();
             const totalColumnsWidth = columnWidth * columns;
             const offsetX = (width - totalColumnsWidth) / 2;
+            const isMobile = width <= mobileBreakpoint;
+            let budgetReached = false;
 
-            for (let col = 0; col < columns; col++) {
+            for (let col = 0; col < columns && !budgetReached; col++) {
                 const columnCenter = offsetX + columnWidth * col + columnWidth / 2;
 
-                for (let row = 0; row < rowsPerColumn; row++) {
+                for (let row = 0; row < rowsPerColumn && !budgetReached; row++) {
                     const y = row * rowSpacing;
                     const startX = columnCenter - totalWidth / 2;
 
@@ -215,6 +218,10 @@
                         const char = phrase[i];
                         const x = startX + centers[i];
                         particles.push(new LetterParticle(char, x, y, col));
+                        if (isMobile && particles.length >= mobileParticleLimit) {
+                            budgetReached = true;
+                            break;
+                        }
                     }
                 }
             }

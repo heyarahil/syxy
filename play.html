@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <link rel="preload" as="video" href="videos/syxy-hero.mp4" type="video/mp4" />
     <title>Play</title>
     <style>
         :root { color-scheme: dark; }
@@ -44,7 +46,7 @@
         }
         .hero {
             position: relative;
-            min-height: 65vh;
+            min-height: clamp(60vh, 70vh, 80vh);
             width: 100%;
             overflow: hidden;
         }
@@ -55,6 +57,7 @@
             height: 100%;
             object-fit: cover;
             filter: contrast(1.1) saturate(1.05);
+            will-change: transform;
         }
         .hero::after {
             content: "";
@@ -63,10 +66,12 @@
             background: linear-gradient(180deg, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.85) 90%);
         }
         .journal {
-            padding: 3rem clamp(1.5rem, 5vw, 6rem);
+            padding: clamp(2rem, 5vw, 3.5rem) clamp(1.25rem, 5vw, 4rem);
             display: flex;
             flex-direction: column;
             gap: 2.5rem;
+            max-width: 1080px;
+            margin: 0 auto;
         }
         .entry {
             display: flex;
@@ -102,7 +107,7 @@
             border-radius: 0.35rem;
         }
         .grid-wall {
-            padding: 0 clamp(3rem, 10vw, 12rem) 4rem;
+            padding: 0 clamp(1.5rem, 8vw, 10rem) 4rem;
         }
         .grid-wall h5 {
             font-size: clamp(1.2rem, 3vw, 2rem);
@@ -113,7 +118,7 @@
         }
         .grid-wall .wall {
             display: grid;
-            grid-template-columns: repeat(2, minmax(220px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1.5rem;
             justify-content: center;
         }
@@ -160,13 +165,43 @@
             header {
                 flex-direction: column;
                 gap: 0.75rem;
+                padding: 1rem clamp(1rem, 5vw, 2rem);
             }
             header nav {
                 flex-wrap: wrap;
                 justify-content: center;
+                gap: 0.75rem;
+                font-size: 0.8rem;
             }
-            .grid-wall .wall {
-                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            .journal {
+                padding: 1.5rem clamp(1rem, 4vw, 1.75rem);
+            }
+            .gallery {
+                grid-template-columns: 1fr;
+            }
+            .gallery img {
+                height: clamp(180px, 45vw, 260px);
+            }
+        }
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 1rem;
+                letter-spacing: 0.1em;
+            }
+            .grid-wall {
+                padding: 0 1rem 3rem;
+            }
+            .grid-wall h5 {
+                letter-spacing: 0.2em;
+            }
+            .cta {
+                padding: 3rem 1.25rem;
+            }
+            .cta h3 {
+                font-size: clamp(1.5rem, 12vw, 2.5rem);
+            }
+            .cta a {
+                width: 100%;
             }
         }
     </style>
@@ -183,7 +218,7 @@
     </header>
 
     <section class="hero">
-        <video src="videos/syxy-hero.mp4" autoplay muted loop playsinline preload="metadata"></video>
+        <video src="videos/syxy-hero.mp4" autoplay muted loop playsinline preload="auto" poster="images/top-1.jpg"></video>
     </section>
 
     <section class="journal">
