@@ -68,7 +68,7 @@
         let totalScrollHeight = 0;
         let columns = 3;
         let rowsPerColumn = 0;
-        const scrollSpeed = 3.1;
+        const scrollSpeed = 3.8;
         const desktopSpacingFactor = 0.82;
         const mobileSpacingFactor = 0.78;
         const mobileBreakpoint = 820;
@@ -76,8 +76,13 @@
         const maxColumns = 5;
         const desktopTargetColumnWidth = 300;
         const mobileTargetColumnWidth = 180;
-        const returnEase = 0.03;
-        const damping = 0.92;
+        const returnEase = 0.06;
+        const damping = 0.88;
+        const baseFrameDuration = 1000 / 60;
+        const scatterRadius = 120;
+        const minScatterForce = 12;
+        const maxScatterForce = 36;
+        const scatterCooldownFrames = 14;
 
         class LetterParticle {
             constructor(char, x, y, columnIndex) {
@@ -92,9 +97,9 @@
                 this.scatterTimer = 0;
             }
 
-            update() {
+            update(timeScale = 1) {
                 const scrollDir = getColumnDirection(this.columnIndex);
-                this.homeY += scrollDir * scrollSpeed;
+                this.homeY += scrollDir * scrollSpeed * timeScale;
 
                 if (this.homeY > height + rowSpacing) {
                     this.homeY -= totalScrollHeight;
@@ -105,15 +110,16 @@
                 }
 
                 if (this.scatterTimer > 0) {
-                    this.scatterTimer--;
+                    this.scatterTimer -= timeScale;
                 } else {
                     const dx = this.homeX - this.x;
                     const dy = this.homeY - this.y;
                     const distance = sqrt(dx * dx + dy * dy);
 
                     if (distance > 0.5) {
-                        this.velX += dx * 0.035;
-                        this.velY += dy * 0.035;
+                        const ease = returnEase * timeScale;
+                        this.velX += dx * ease;
+                        this.velY += dy * ease;
                     } else {
                         this.x = this.homeX;
                         this.y = this.homeY;
@@ -122,24 +128,26 @@
                     }
                 }
 
-                this.velX *= 0.9;
-                this.velY *= 0.9;
+                const dampingFactor = Math.pow(damping, timeScale);
+                this.velX *= dampingFactor;
+                this.velY *= dampingFactor;
 
-                this.x += this.velX;
-                this.y += this.velY;
+                this.x += this.velX * timeScale;
+                this.y += this.velY * timeScale;
             }
 
-            scatter(mouseX, mouseY) {
+            scatter(mouseX, mouseY, timeScale = 1) {
                 const dx = this.x - mouseX;
                 const dy = this.y - mouseY;
                 const distance = sqrt(dx * dx + dy * dy);
 
-                if (distance < 60 && this.scatterTimer === 0) {
+                if (distance < scatterRadius && this.scatterTimer <= 0) {
                     const angle = atan2(dy, dx);
-                    const force = random(8, 24);
-                    this.velX += cos(angle) * force;
-                    this.velY += sin(angle) * force;
-                    this.scatterTimer = 24;
+                    const intensity = 1 - distance / scatterRadius;
+                    const force = minScatterForce + intensity * (maxScatterForce - minScatterForce);
+                    this.velX += cos(angle) * force * timeScale;
+                    this.velY += sin(angle) * force * timeScale;
+                    this.scatterTimer = scatterCooldownFrames;
                 }
             }
 
@@ -164,6 +172,7 @@
 
         function setup() {
             createCanvas(windowWidth, windowHeight);
+            pixelDensity(Math.min(window.devicePixelRatio || 1, 1.5));
             frameRate(60);
             fontSize = windowWidth * 0.05;
             fontSize = constrain(fontSize, 28, 110);
@@ -217,10 +226,13 @@
         function draw() {
             background(0);
 
+            const frameScale = deltaTime ? deltaTime / baseFrameDuration : 1;
+            const adjustedScale = constrain(frameScale, 0.5, 3);
+
             for (const p of particles) {
-                p.update();
+                p.update(adjustedScale);
                 if (mouseX > 0 && mouseY > 0) {
-                    p.scatter(mouseX, mouseY);
+                    p.scatter(mouseX, mouseY, adjustedScale);
                 }
                 p.display();
             }
