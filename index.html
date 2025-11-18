@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Typography Scroll Up</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+    <style>
+        @font-face {
+            font-family: "Comforter Brush";
+            src: url("fonts/ComforterBrush-Regular.woff") format("woff");
+            font-display: swap;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: black;
+            overscroll-behavior: none;
+            touch-action: none;
+        }
+        canvas {
+            display: block;
+        }
+
+        .play-button {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            padding: 0;
+            font-size: clamp(2.6rem, 5vw, 6rem);
+            font-weight: 700;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            text-transform: lowercase;
+            letter-spacing: 0.08em;
+            color: rgba(255, 255, 255, 0.85);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: color 160ms ease;
+        }
+
+        .play-button:hover,
+        .play-button:focus-visible {
+            color: #ff1e1e;
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+    <button class="play-button" id="play-button">play.</button>
+    <script>
+        const playButton = document.getElementById("play-button");
+        playButton.addEventListener("click", () => {
+            window.location.href = "play.html";
+        });
+
+        const phrase = "Syxy ";
+        let particles = [];
+        let customFont;
+        let fontLoaded = false;
+        let fontSize;
+        let rowSpacing;
+        let columnWidth;
+        let totalScrollHeight = 0;
+        let columns = 3;
+        let rowsPerColumn = 0;
+        const scrollSpeed = 3.1;
+        const desktopSpacingFactor = 0.82;
+        const mobileSpacingFactor = 0.78;
+        const mobileBreakpoint = 820;
+        const minColumns = 2;
+        const maxColumns = 5;
+        const desktopTargetColumnWidth = 300;
+        const mobileTargetColumnWidth = 180;
+        const returnEase = 0.03;
+        const damping = 0.92;
+
+        class LetterParticle {
+            constructor(char, x, y, columnIndex) {
+                this.char = char;
+                this.columnIndex = columnIndex;
+                this.homeX = x;
+                this.homeY = y;
+                this.x = x;
+                this.y = y;
+                this.velX = 0;
+                this.velY = 0;
+                this.scatterTimer = 0;
+            }
+
+            update() {
+                const scrollDir = getColumnDirection(this.columnIndex);
+                this.homeY += scrollDir * scrollSpeed;
+
+                if (this.homeY > height + rowSpacing) {
+                    this.homeY -= totalScrollHeight;
+                    this.y -= totalScrollHeight;
+                } else if (this.homeY < -rowSpacing) {
+                    this.homeY += totalScrollHeight;
+                    this.y += totalScrollHeight;
+                }
+
+                if (this.scatterTimer > 0) {
+                    this.scatterTimer--;
+                } else {
+                    const dx = this.homeX - this.x;
+                    const dy = this.homeY - this.y;
+                    const distance = sqrt(dx * dx + dy * dy);
+
+                    if (distance > 0.5) {
+                        this.velX += dx * 0.035;
+                        this.velY += dy * 0.035;
+                    } else {
+                        this.x = this.homeX;
+                        this.y = this.homeY;
+                        this.velX = 0;
+                        this.velY = 0;
+                    }
+                }
+
+                this.velX *= 0.9;
+                this.velY *= 0.9;
+
+                this.x += this.velX;
+                this.y += this.velY;
+            }
+
+            scatter(mouseX, mouseY) {
+                const dx = this.x - mouseX;
+                const dy = this.y - mouseY;
+                const distance = sqrt(dx * dx + dy * dy);
+
+                if (distance < 60 && this.scatterTimer === 0) {
+                    const angle = atan2(dy, dx);
+                    const force = random(8, 24);
+                    this.velX += cos(angle) * force;
+                    this.velY += sin(angle) * force;
+                    this.scatterTimer = 24;
+                }
+            }
+
+            display() {
+                let opacity = 255;
+
+                const fadeTop = rowSpacing * 0.5;
+                if (this.homeY < fadeTop) {
+                    opacity = map(this.homeY, -rowSpacing * 0.8, fadeTop, 0, 255, true);
+                }
+
+                const fadeBottomStart = height - rowSpacing * 0.5;
+                if (this.homeY > fadeBottomStart) {
+                    opacity = map(this.homeY, fadeBottomStart, height + rowSpacing * 0.8, 255, 0, true);
+                }
+
+                fill(255, 192, 203, opacity);
+                noStroke();
+                text(this.char, this.x, this.y);
+            }
+        }
+
+        function setup() {
+            createCanvas(windowWidth, windowHeight);
+            frameRate(60);
+            fontSize = windowWidth * 0.05;
+            fontSize = constrain(fontSize, 28, 110);
+            textSize(fontSize);
+            textStyle(BOLD);
+            textAlign(CENTER, CENTER);
+            prepareFont().then((fontName) => {
+                customFont = fontName;
+            }).catch(() => {
+                console.warn("Falling back to system font");
+                customFont = "Helvetica Neue";
+            }).finally(() => {
+                textFont(customFont);
+                fontLoaded = true;
+                recalcLayout();
+            });
+        }
+
+        function prepareFont() {
+            if (!("fonts" in document)) {
+                return Promise.resolve("Helvetica Neue");
+            }
+            return document.fonts.load('32px "Comforter Brush"').then(() => {
+                return "Comforter Brush";
+            });
+        }
+
+        function createParticles() {
+            particles = [];
+
+            const { centers, totalWidth } = computePhraseLayout();
+            const totalColumnsWidth = columnWidth * columns;
+            const offsetX = (width - totalColumnsWidth) / 2;
+
+            for (let col = 0; col < columns; col++) {
+                const columnCenter = offsetX + columnWidth * col + columnWidth / 2;
+
+                for (let row = 0; row < rowsPerColumn; row++) {
+                    const y = row * rowSpacing;
+                    const startX = columnCenter - totalWidth / 2;
+
+                    for (let i = 0; i < centers.length; i++) {
+                        const char = phrase[i];
+                        const x = startX + centers[i];
+                        particles.push(new LetterParticle(char, x, y, col));
+                    }
+                }
+            }
+        }
+
+        function draw() {
+            background(0);
+
+            for (const p of particles) {
+                p.update();
+                if (mouseX > 0 && mouseY > 0) {
+                    p.scatter(mouseX, mouseY);
+                }
+                p.display();
+            }
+        }
+
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+            recalcLayout();
+        }
+
+        function recalcLayout() {
+            if (!fontLoaded) {
+                return;
+            }
+            const isMobile = width <= mobileBreakpoint;
+            const targetColumnWidth = isMobile ? mobileTargetColumnWidth : desktopTargetColumnWidth;
+            const estimatedColumns = Math.max(minColumns, Math.round(width / targetColumnWidth));
+            columns = constrain(isMobile ? Math.min(estimatedColumns, 3) : estimatedColumns, minColumns, maxColumns);
+            columnWidth = width / columns;
+
+            fontSize = columnWidth * (isMobile ? 0.8 : 0.65);
+            fontSize = constrain(fontSize, isMobile ? 26 : 42, 220);
+            textSize(fontSize);
+            textFont(customFont || "Helvetica Neue");
+
+            const spacingFactor = isMobile ? mobileSpacingFactor : desktopSpacingFactor;
+            rowSpacing = fontSize * spacingFactor;
+            rowsPerColumn = Math.ceil(height / rowSpacing) + (isMobile ? 4 : 6);
+            totalScrollHeight = rowSpacing * rowsPerColumn;
+            createParticles();
+        }
+
+        function getColumnDirection(index) {
+            return index % 2 === 0 ? 1 : -1;
+        }
+
+        function computePhraseLayout() {
+            const centers = [];
+            let cursor = 0;
+
+            for (let i = 0; i < phrase.length; i++) {
+                const charWidth = textWidth(phrase[i]);
+                centers.push(cursor + charWidth / 2);
+                cursor += charWidth * 0.95;
+            }
+
+            return { centers, totalWidth: cursor };
+        }
+    </script>
+</body>
+</html>
