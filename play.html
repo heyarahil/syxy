@@ -8,30 +8,40 @@
     <style>
         :root { color-scheme: dark; }
         * { box-sizing: border-box; }
+        @font-face {
+            font-family: "Comforter Brush";
+            src: url("fonts/ComforterBrush-Regular.woff") format("woff");
+            font-display: swap;
+        }
         body {
             margin: 0;
             min-height: 100vh;
-            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-family: "Comforter Brush", cursive;
             background: #050505;
             color: #f8f8f8;
             display: flex;
             flex-direction: column;
         }
         header {
-            padding: 1.5rem 3vw;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            padding: 0;
             position: sticky;
             top: 0;
             z-index: 20;
+        }
+        .syxy-ticker {
+            overflow: hidden;
+            white-space: nowrap;
+            padding: 1.25rem 3vw;
             mix-blend-mode: difference;
         }
-        header h1 {
-            font-size: clamp(1.25rem, 2vw, 1.75rem);
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            margin: 0;
+        .syxy-ticker-track {
+            display: inline-block;
+            animation: syxy-scroll 18s linear infinite;
+        }
+        .syxy-ticker-text {
+            font-family: "Comforter Brush", cursive;
+            font-size: clamp(1.6rem, 3.8vw, 2.7rem);
+            letter-spacing: 0.22em;
         }
         .hero {
             position: relative;
@@ -78,15 +88,11 @@
             border-radius: 0.35rem;
         }
         @media (max-width: 720px) {
-            header {
+            .syxy-ticker {
                 padding: 1rem clamp(1rem, 5vw, 2rem);
             }
         }
         @media (max-width: 480px) {
-            header h1 {
-                font-size: 1rem;
-                letter-spacing: 0.1em;
-            }
             .grid-wall {
                 padding: 0 1rem 3rem;
             }
@@ -94,11 +100,29 @@
                 letter-spacing: 0.2em;
             }
         }
+
+        @keyframes syxy-scroll {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-50%);
+            }
+        }
     </style>
 </head>
 <body>
     <header>
-        <h1>SYXY PLAY</h1>
+        <div class="syxy-ticker">
+            <div class="syxy-ticker-track">
+                <span class="syxy-ticker-text">
+                    Syxy&nbsp;Syxy&nbsp;Syxy&nbsp;Syxy&nbsp;Syxy&nbsp;Syxy&nbsp;Syxy&nbsp;Syxy&nbsp;Syxy&nbsp;Syxy&nbsp;Syxy&nbsp;Syxy
+                </span>
+                <span class="syxy-ticker-text">
+                    Syxy&nbsp;Syxy&nbsp;Syxy&nbsp;Syxy&nbsp;Syxy&nbsp;Syxy&nbsp;Syxy&nbsp;Syxy&nbsp;Syxy&nbsp;Syxy&nbsp;Syxy&nbsp;Syxy
+                </span>
+            </div>
+        </div>
     </header>
 
     <section class="hero">
