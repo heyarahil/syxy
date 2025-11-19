@@ -45,9 +45,10 @@
             height: 100%;
             display: block;
             filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+            overflow: visible;
         }
 
-        .play-button path {
+        .play-button path.main-heart {
             transition: fill 220ms ease, stroke 220ms ease;
         }
 
@@ -57,29 +58,108 @@
             outline: none;
         }
 
-        .play-button:hover path {
-            fill: rgba(255, 255, 255, 0.25);
+        .play-button:hover path.main-heart {
+            fill: #ffffff;
             stroke: #fff;
+        }
+
+        .mini-heart {
+            opacity: 0;
+            transform-origin: center;
+            pointer-events: none;
+        }
+
+        .play-button:hover .mini-heart {
+            animation: pop-heart 1s ease-out infinite;
+        }
+
+        .play-button:hover .mini-heart:nth-child(3) { animation-delay: 0s; }
+        .play-button:hover .mini-heart:nth-child(4) { animation-delay: 0.2s; }
+        .play-button:hover .mini-heart:nth-child(5) { animation-delay: 0.4s; }
+        .play-button:hover .mini-heart:nth-child(6) { animation-delay: 0.6s; }
+
+        @keyframes pop-heart {
+            0% {
+                opacity: 0;
+                transform: scale(0.2) translate(0, 0);
+            }
+            20% {
+                opacity: 0.8;
+                transform: scale(0.6) translate(var(--tx), var(--ty));
+            }
+            100% {
+                opacity: 0;
+                transform: scale(1.2) translate(calc(var(--tx) * 2), calc(var(--ty) * 2));
+            }
         }
     </style>
 </head>
 <body>
     <button class="play-button" id="play-button" aria-label="Play">
         <svg viewBox="0 0 100 85" xmlns="http://www.w3.org/2000/svg">
-            <path d="M50 85 C10 60 0 40 0 25 C0 10 15 0 32 0 C42 0 50 10 50 10 C50 10 58 0 68 0 C85 0 100 10 100 25 C100 40 90 60 50 85 Z"
+            <path class="main-heart" d="M50 85 C10 60 0 40 0 25 C0 10 15 0 32 0 C42 0 50 10 50 10 C50 10 58 0 68 0 C85 0 100 10 100 25 C100 40 90 60 50 85 Z"
                   fill="rgba(255, 255, 255, 0.15)"
                   stroke="rgba(255, 255, 255, 0.8)"
                   stroke-width="2" />
             <text x="50" y="45"
                   text-anchor="middle"
                   dominant-baseline="middle"
-                  fill="white"
+                  fill="#ff69b4"
                   font-family="'Comforter Brush', cursive"
                   font-size="22">PLAY &lt;3</text>
+            
+            <!-- Mini hearts for hover effect -->
+            <path class="mini-heart" style="--tx: -20px; --ty: -30px;" d="M50 85 C10 60 0 40 0 25 C0 10 15 0 32 0 C42 0 50 10 50 10 C50 10 58 0 68 0 C85 0 100 10 100 25 C100 40 90 60 50 85 Z" fill="#ff69b4" transform="scale(0.2)" />
+            <path class="mini-heart" style="--tx: 20px; --ty: -30px;" d="M50 85 C10 60 0 40 0 25 C0 10 15 0 32 0 C42 0 50 10 50 10 C50 10 58 0 68 0 C85 0 100 10 100 25 C100 40 90 60 50 85 Z" fill="#ff69b4" transform="scale(0.2)" />
+            <path class="mini-heart" style="--tx: -30px; --ty: 10px;" d="M50 85 C10 60 0 40 0 25 C0 10 15 0 32 0 C42 0 50 10 50 10 C50 10 58 0 68 0 C85 0 100 10 100 25 C100 40 90 60 50 85 Z" fill="#ff69b4" transform="scale(0.2)" />
+            <path class="mini-heart" style="--tx: 30px; --ty: 10px;" d="M50 85 C10 60 0 40 0 25 C0 10 15 0 32 0 C42 0 50 10 50 10 C50 10 58 0 68 0 C85 0 100 10 100 25 C100 40 90 60 50 85 Z" fill="#ff69b4" transform="scale(0.2)" />
         </svg>
     </button>
     <script>
         const playButton = document.getElementById("play-button");
+        
+        // Create audio context for twinkling sound
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+
+        function playTwinkle() {
+            if (!audioCtx) {
+                audioCtx = new AudioContext();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            const now = audioCtx.currentTime;
+            
+            // Create multiple oscillators for a sparkly chord
+            [0, 0.1, 0.2].forEach((delay, i) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                // High pitched sine waves
+                osc.type = 'sine';
+                // Pentatonic-ish notes: C6, D6, E6
+                const freqs = [1046.50, 1174.66, 1318.51]; 
+                osc.frequency.setValueAtTime(freqs[i] + (Math.random() * 20 - 10), now + delay);
+                
+                // Envelope
+                gain.gain.setValueAtTime(0, now + delay);
+                gain.gain.linearRampToValueAtTime(0.1, now + delay + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.4);
+                
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                osc.start(now + delay);
+                osc.stop(now + delay + 0.5);
+            });
+        }
+
+        playButton.addEventListener("mouseenter", () => {
+            playTwinkle();
+        });
+
         playButton.addEventListener("click", () => {
             window.location.href = "play.html";
         });
