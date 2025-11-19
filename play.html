@@ -64,41 +64,12 @@
             inset: 0;
             background: linear-gradient(180deg, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.85) 90%);
         }
-        .grid-wall {
-            padding: 0 clamp(1.5rem, 8vw, 10rem) 4rem;
-        }
-        .grid-wall h5 {
-            font-size: clamp(1.2rem, 3vw, 2rem);
-            letter-spacing: 0.3em;
-            text-transform: uppercase;
-            margin: 0 0 1.5rem;
-            text-align: center;
-        }
-        .grid-wall .wall {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            justify-content: center;
-        }
-        .grid-wall img {
-            width: 100%;
-            height: clamp(240px, 38vw, 420px);
-            object-fit: cover;
-            display: block;
-            border-radius: 0.35rem;
-        }
         @media (max-width: 720px) {
             .syxy-ticker {
                 padding: 1rem clamp(1rem, 5vw, 2rem);
             }
         }
         @media (max-width: 480px) {
-            .grid-wall {
-                padding: 0 1rem 3rem;
-            }
-            .grid-wall h5 {
-                letter-spacing: 0.2em;
-            }
         }
 
         @keyframes syxy-scroll {
@@ -127,15 +98,6 @@
 
     <section class="hero">
         <video src="videos/syxy-hero.mp4" autoplay muted loop playsinline preload="auto" poster="images/top-1.jpg"></video>
-    </section>
-
-    <section class="grid-wall">
-        <div class="wall">
-            <img src="images/down-1.png" alt="Syxy wall one" loading="lazy" />
-            <img src="images/down-2.png" alt="Syxy wall two" loading="lazy" />
-            <img src="images/down-3.png" alt="Syxy wall three" loading="lazy" />
-            <img src="images/down-4.png" alt="Syxy wall four" loading="lazy" />
-        </div>
     </section>
 
 </body>
