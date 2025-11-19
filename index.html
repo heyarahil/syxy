@@ -87,6 +87,19 @@
             return audioCtx;
         }
 
+        // Initialize audio context on first real user gesture (tap/click)
+        window.addEventListener(
+            "pointerdown",
+            () => {
+                try {
+                    ensureAudioContext();
+                } catch (e) {
+                    console.warn("Audio init failed", e);
+                }
+            },
+            { once: true }
+        );
+
         // Play a sparkling chord for the main button
         function playTwinkle() {
             const ctx = ensureAudioContext();
