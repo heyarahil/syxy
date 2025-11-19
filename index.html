@@ -72,71 +72,9 @@
     <script>
         const playButton = document.getElementById("play-button");
 
-        // Shared Web Audio context
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        let audioCtx;
-        let lastParticleToneTime = 0;
-
-        function ensureAudioContext() {
-            if (!audioCtx) {
-                audioCtx = new AudioContext();
-            }
-            if (audioCtx.state === "suspended") {
-                audioCtx.resume();
-            }
-            return audioCtx;
-        }
-
-        // Initialize audio context on first real user gesture (tap/click)
-        playButton.addEventListener(
-            "pointerdown",
-            () => {
-                try {
-                    ensureAudioContext();
-                } catch (e) {
-                    console.warn("Audio init failed", e);
-                }
-            },
-            { once: true }
-        );
-
-        // Play a sparkling chord for the main button
-        function playTwinkle() {
-            const ctx = ensureAudioContext();
-            const now = ctx.currentTime;
-            
-            // Create multiple oscillators for a sparkly chord
-            [0, 0.1, 0.2].forEach((delay, i) => {
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                
-                // High pitched sine waves
-                osc.type = "sine";
-                // Pentatonic-ish notes: C6, D6, E6
-                const freqs = [1046.50, 1174.66, 1318.51]; 
-                osc.frequency.setValueAtTime(freqs[i] + (Math.random() * 20 - 10), now + delay);
-                
-                // Envelope
-                gain.gain.setValueAtTime(0, now + delay);
-                gain.gain.linearRampToValueAtTime(0.1, now + delay + 0.05);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.4);
-                
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                
-                osc.start(now + delay);
-                osc.stop(now + delay + 0.5);
-            });
-        }
-
-        // NOTE: Letter-level sounds removed for mobile reliability.
-
-        // On mobile there is no hover, so play sound and then navigate on tap
+        // Simple navigation only, no sound
         playButton.addEventListener("click", () => {
-            playTwinkle();
-            setTimeout(() => {
-                window.location.href = "play.html";
-            }, 220);
+            window.location.href = "play.html";
         });
 
         const phrase = "Syxy ";
