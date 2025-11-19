@@ -21,6 +21,41 @@
             color: #f8f8f8;
             display: flex;
             flex-direction: column;
+            position: relative;
+            overflow-x: hidden;
+        }
+        .floating-icons {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.08;
+        }
+        .floating-icon {
+            position: absolute;
+            animation: float-drift 20s ease-in-out infinite;
+        }
+        .floating-icon svg {
+            width: clamp(20px, 3vw, 40px);
+            height: clamp(20px, 3vw, 40px);
+            fill: url(#icon-gradient);
+        }
+        @keyframes float-drift {
+            0%, 100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+            25% {
+                transform: translate(15px, -20px) rotate(5deg);
+            }
+            50% {
+                transform: translate(-10px, -35px) rotate(-3deg);
+            }
+            75% {
+                transform: translate(20px, -15px) rotate(4deg);
+            }
         }
         header {
             padding: 0;
@@ -132,6 +167,16 @@
     </style>
 </head>
 <body>
+    <div class="floating-icons" id="floating-icons">
+        <svg style="position: absolute; width: 0; height: 0;">
+            <defs>
+                <linearGradient id="icon-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" style="stop-color:#000000;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#0a0a0a;stop-opacity:0.5" />
+                </linearGradient>
+            </defs>
+        </svg>
+    </div>
     <header>
         <div class="syxy-ticker">
             <div class="syxy-ticker-track">
@@ -210,6 +255,41 @@
     <div class="footer-note">
         COPYRIGHT SYXY
     </div>
+
+    <script>
+        // Generate floating music icons
+        const iconContainer = document.getElementById('floating-icons');
+        
+        const musicIcons = [
+            // Music note
+            '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 3v10.5c-.5-.3-1.2-.5-2-.5-2.2 0-4 1.3-4 3s1.8 3 4 3 4-1.3 4-3V7h4V3h-6z"/></svg>',
+            // Microphone
+            '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 15c1.7 0 3-1.3 3-3V6c0-1.7-1.3-3-3-3S9 4.3 9 6v6c0 1.7 1.3 3 3 3zm5-3c0 2.8-2.2 5-5 5s-5-2.2-5-5H5c0 3.5 2.6 6.3 6 6.9V21h2v-2.1c3.4-.6 6-3.4 6-6.9h-2z"/></svg>',
+            // Simple music note
+            '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="18" r="2"/><path d="M10 18V5l7-2v11"/><circle cx="17" cy="14" r="2"/></svg>',
+            // Headphones
+            '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 3C7 3 3 7 3 12v7c0 1.1.9 2 2 2h2c1.1 0 2-.9 2-2v-4c0-1.1-.9-2-2-2H5v-1c0-3.9 3.1-7 7-7s7 3.1 7 7v1h-2c-1.1 0-2 .9-2 2v4c0 1.1.9 2 2 2h2c1.1 0 2-.9 2-2v-7c0-5-4-9-9-9z"/></svg>'
+        ];
+
+        // Create 12 floating icons at random positions
+        for (let i = 0; i < 12; i++) {
+            const icon = document.createElement('div');
+            icon.className = 'floating-icon';
+            
+            // Random position
+            icon.style.left = Math.random() * 90 + 5 + '%';
+            icon.style.top = Math.random() * 90 + 5 + '%';
+            
+            // Random icon
+            icon.innerHTML = musicIcons[Math.floor(Math.random() * musicIcons.length)];
+            
+            // Stagger animation
+            icon.style.animationDelay = (Math.random() * 10) + 's';
+            icon.style.animationDuration = (15 + Math.random() * 15) + 's';
+            
+            iconContainer.appendChild(icon);
+        }
+    </script>
 
 </body>
 </html>
