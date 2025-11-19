@@ -268,18 +268,55 @@
                 this.velX = 0;
                 this.velY = 0;
                 this.scatterTimer = 0;
+                this.reversed = false;
             }
 
             update() {
-                const scrollDir = getColumnDirection(this.columnIndex);
+                // Calculate button blocking zone
+                const buttonCenterX = width / 2;
+                const buttonCenterY = height / 2;
+                const buttonSize = Math.max(
+                    width <= 480 ? min(0.8 * width, 720) : 
+                    width <= 820 ? min(0.7 * width, 640) : 
+                    min(0.28 * width, 448),
+                    100
+                );
+                const buttonPadding = width <= 480 ? 32 : width <= 820 ? 40 : 48;
+                const blockZoneSize = buttonSize + buttonPadding * 2;
+                
+                const buttonLeft = buttonCenterX - blockZoneSize / 2;
+                const buttonRight = buttonCenterX + blockZoneSize / 2;
+                const buttonTop = buttonCenterY - blockZoneSize / 2;
+                const buttonBottom = buttonCenterY + blockZoneSize / 2;
+
+                // Check if particle is approaching the button zone
+                const nextY = this.homeY + getColumnDirection(this.columnIndex) * scrollSpeed;
+                const isInButtonColumn = this.homeX >= buttonLeft && this.homeX <= buttonRight;
+                
+                if (isInButtonColumn) {
+                    if (!this.reversed) {
+                        // Approaching from top
+                        if (this.homeY < buttonTop && nextY >= buttonTop) {
+                            this.reversed = true;
+                        }
+                        // Approaching from bottom
+                        if (this.homeY > buttonBottom && nextY <= buttonBottom) {
+                            this.reversed = true;
+                        }
+                    }
+                }
+
+                const scrollDir = this.reversed ? -getColumnDirection(this.columnIndex) : getColumnDirection(this.columnIndex);
                 this.homeY += scrollDir * scrollSpeed;
 
                 if (this.homeY > height + rowSpacing) {
                     this.homeY -= totalScrollHeight;
                     this.y -= totalScrollHeight;
+                    this.reversed = false;
                 } else if (this.homeY < -rowSpacing) {
                     this.homeY += totalScrollHeight;
                     this.y += totalScrollHeight;
+                    this.reversed = false;
                 }
 
                 if (this.scatterTimer > 0) {
