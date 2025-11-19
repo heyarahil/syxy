@@ -88,7 +88,7 @@
         }
 
         // Initialize audio context on first real user gesture (tap/click)
-        window.addEventListener(
+        playButton.addEventListener(
             "pointerdown",
             () => {
                 try {
@@ -129,61 +129,14 @@
             });
         }
 
-        // Individual tinkling tone for scattered letters
-        function playParticleTone(char) {
-            // Throttle so we don't spam too many sounds
-            const nowMs = (window.performance && performance.now()) || Date.now();
-            if (nowMs - lastParticleToneTime < 70) {
-                return;
-            }
-            lastParticleToneTime = nowMs;
+        // NOTE: Letter-level sounds removed for mobile reliability.
 
-            const ctx = ensureAudioContext();
-            const now = ctx.currentTime;
-
-            // Map different letters to different base frequencies
-            const upper = (char || "").toUpperCase();
-            let baseFreq;
-            switch (upper) {
-                case "S":
-                    baseFreq = 659.25; // E5
-                    break;
-                case "Y":
-                    baseFreq = 783.99; // G5
-                    break;
-                case "X":
-                    baseFreq = 987.77; // B5
-                    break;
-                default:
-                    baseFreq = 880.0; // A5 fallback
-            }
-
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-
-            osc.type = "triangle";
-            osc.frequency.setValueAtTime(
-                baseFreq + (Math.random() * 30 - 15),
-                now
-            );
-
-            gain.gain.setValueAtTime(0, now);
-            gain.gain.linearRampToValueAtTime(0.12, now + 0.03);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
-
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-
-            osc.start(now);
-            osc.stop(now + 0.3);
-        }
-
-        playButton.addEventListener("mouseenter", () => {
-            playTwinkle();
-        });
-
+        // On mobile there is no hover, so play sound and then navigate on tap
         playButton.addEventListener("click", () => {
-            window.location.href = "play.html";
+            playTwinkle();
+            setTimeout(() => {
+                window.location.href = "play.html";
+            }, 220);
         });
 
         const phrase = "Syxy ";
@@ -272,11 +225,6 @@
                     this.velX += cos(angle) * force;
                     this.velY += sin(angle) * force;
                     this.scatterTimer = 24;
-
-                    // Play a tinkling tone when this letter scatters
-                    if (typeof playParticleTone === "function") {
-                        playParticleTone(this.char);
-                    }
                 }
             }
 
