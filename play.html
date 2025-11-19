@@ -68,6 +68,27 @@
             inset: 0;
             background: linear-gradient(180deg, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.85) 90%);
         }
+        .stack {
+            padding: 4rem clamp(1.5rem, 6vw, 4rem) 6rem;
+            display: flex;
+            flex-direction: column;
+            gap: 3.5rem;
+        }
+        .stack-item {
+            max-width: min(900px, 88vw);
+            margin: 0 auto;
+        }
+        .stack-item img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 0.4rem;
+        }
+        .stack-item p {
+            margin: 1.1rem 0 0;
+            font-size: clamp(1rem, 2.2vw, 1.6rem);
+            letter-spacing: 0.14em;
+        }
         @media (max-width: 720px) {
             .syxy-ticker {
                 padding: 1rem clamp(1rem, 5vw, 2rem);
@@ -102,6 +123,37 @@
 
     <section class="hero">
         <video src="videos/syxy-hero.mp4" autoplay muted loop playsinline preload="auto" poster="images/top-1.jpg"></video>
+    </section>
+
+    <section class="stack">
+        <article class="stack-item">
+            <img src="iCloud Photos from OP OP 2/1.jpg" alt="Syxy still 1" loading="lazy" />
+            <p>syxy — chapter one.</p>
+        </article>
+        <article class="stack-item">
+            <img src="iCloud Photos from OP OP/1.png" alt="Syxy still 1b" loading="lazy" />
+            <p>syxy — echo one.</p>
+        </article>
+        <article class="stack-item">
+            <img src="iCloud Photos from OP OP 2/2.jpg" alt="Syxy still 2" loading="lazy" />
+            <p>syxy — chapter two.</p>
+        </article>
+        <article class="stack-item">
+            <img src="iCloud Photos from OP OP/2.png" alt="Syxy still 2b" loading="lazy" />
+            <p>syxy — echo two.</p>
+        </article>
+        <article class="stack-item">
+            <img src="iCloud Photos from OP OP 2/3.jpg" alt="Syxy still 3" loading="lazy" />
+            <p>syxy — chapter three.</p>
+        </article>
+        <article class="stack-item">
+            <img src="iCloud Photos from OP OP/3.png" alt="Syxy still 3b" loading="lazy" />
+            <p>syxy — echo three.</p>
+        </article>
+        <article class="stack-item">
+            <img src="iCloud Photos from OP OP 2/4.png" alt="Syxy still 4" loading="lazy" />
+            <p>syxy — chapter four.</p>
+        </article>
     </section>
 
 </body>
