@@ -44,32 +44,13 @@
             height: auto;
             display: block;
             filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4));
-            transition: filter 350ms ease;
-        }
-
-        .play-button:hover img,
-        .play-button:focus-visible img {
-            filter: drop-shadow(0 0 20px rgba(139, 0, 0, 0.9)) 
-                   drop-shadow(0 0 40px rgba(139, 0, 0, 0.6))
-                   drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4))
-                   brightness(0.7)
-                   hue-rotate(-10deg)
-                   saturate(1.3);
-        }
-
-        .play-button:active img {
-            filter: drop-shadow(0 0 25px rgba(139, 0, 0, 1)) 
-                   drop-shadow(0 0 50px rgba(139, 0, 0, 0.8))
-                   brightness(0.5)
-                   hue-rotate(-20deg)
-                   saturate(1.5);
         }
 
         .play-button:focus-visible {
             outline: none;
         }
 
-        .bat-container {
+        .music-container {
             position: fixed;
             top: 50%;
             left: 50%;
@@ -80,37 +61,63 @@
             height: 1px;
         }
 
-        .bat {
+        .music-icon {
             position: absolute;
-            font-size: clamp(1.5rem, 3vw, 2.5rem);
             opacity: 0;
-            animation: bat-fly 2.5s ease-out forwards;
+            animation: music-fly 2.5s ease-out forwards;
         }
 
-        @keyframes bat-fly {
+        .music-icon svg {
+            width: clamp(2rem, 4vw, 3.5rem);
+            height: clamp(2rem, 4vw, 3.5rem);
+            fill: #ff69b4;
+            filter: drop-shadow(0 2px 4px rgba(255, 105, 180, 0.4));
+        }
+
+        @keyframes music-fly {
             0% {
                 opacity: 0;
-                transform: translate(0, 0) rotate(0deg) scale(0.5);
+                transform: translate(0, 0) rotate(0deg) scale(0.3);
             }
-            10% {
+            15% {
                 opacity: 1;
             }
             100% {
                 opacity: 0;
-                transform: translate(var(--bat-x), var(--bat-y)) rotate(var(--bat-rot)) scale(1.2);
+                transform: translate(var(--music-x), var(--music-y)) rotate(var(--music-rot)) scale(1.3);
             }
         }
     </style>
 </head>
 <body>
-    <div class="bat-container" id="bat-container"></div>
+    <div class="music-container" id="music-container"></div>
     <button class="play-button" id="play-button" aria-label="Play">
         <img src="Photoroom_20251118_232501.png" alt="Play button" />
     </button>
     <script>
         const playButton = document.getElementById("play-button");
-        const batContainer = document.getElementById("bat-container");
-        let batInterval;
+        const musicContainer = document.getElementById("music-container");
+        let musicInterval;
+        
+        // Music instrument SVG icons
+        const musicIcons = [
+            // Guitar
+            '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19.59 3.41L20.41 2.59C21.2 3.38 21.2 4.66 20.41 5.45L16.54 9.32C17.35 11.26 16.96 13.56 15.54 15C14.12 16.42 11.82 16.81 9.88 16L6.41 19.47C5.63 20.25 4.34 20.25 3.56 19.47C2.78 18.69 2.78 17.41 3.56 16.62L7.03 13.15C6.22 11.21 6.61 8.91 8.03 7.49C9.45 6.07 11.75 5.68 13.69 6.49L17.56 2.62C18.34 1.84 19.63 1.84 20.41 2.62M14.54 10.54C14.15 10.15 13.5 10.15 13.11 10.54C12.72 10.93 12.72 11.58 13.11 11.97C13.5 12.36 14.15 12.36 14.54 11.97C14.93 11.58 14.93 10.93 14.54 10.54Z"/></svg>',
+            // Piano
+            '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 2H4C2.9 2 2 2.9 2 4V20C2 21.11 2.9 22 4 22H20C21.11 22 22 21.11 22 20V4C22 2.9 21.11 2 20 2M8 17H6V6H8V11H9V6H11V11H12V6H14V17H12V13H11V17H9V13H8V17M17 13H15V6H17V13Z"/></svg>',
+            // Drum
+            '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C8.69 2 6 3.34 6 5V8C6 10.21 8.69 11 12 11C15.31 11 18 10.21 18 8V5C18 3.34 15.31 2 12 2M18 10C18 11.66 15.31 13 12 13S6 11.66 6 10V14C6 15.66 8.69 17 12 17S18 15.66 18 14V10M6 16C6 17.66 8.69 19 12 19S18 17.66 18 16V20C18 21.66 15.31 23 12 23S6 21.66 6 20V16Z"/></svg>',
+            // Microphone
+            '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2A3 3 0 0 0 9 5V11A3 3 0 0 0 12 14A3 3 0 0 0 15 11V5A3 3 0 0 0 12 2M19 11C19 14.53 16.39 17.44 13 17.93V21H11V17.93C7.61 17.44 5 14.53 5 11H7A5 5 0 0 0 12 16A5 5 0 0 0 17 11H19Z"/></svg>',
+            // Violin
+            '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9.5 5C7 5 5 7 5 9.5C5 11.39 6.21 13 7.95 13.5L6.09 15.36C5.5 14.79 4.69 14.5 3.89 14.5C2.28 14.5 1 15.78 1 17.39C1 18.22 1.35 19 1.97 19.58L2.14 19.75C2.74 20.31 3.53 20.61 4.33 20.61C5.94 20.61 7.22 19.33 7.22 17.72C7.22 16.92 6.93 16.11 6.36 15.5L8.23 13.64C8.72 13.77 9.23 13.83 9.75 13.83C10.96 13.83 12.09 13.5 13.03 12.92L15.75 15.64C15.28 16.11 15 16.73 15 17.39C15 18.22 15.35 19 15.97 19.58L16.14 19.75C16.74 20.31 17.53 20.61 18.33 20.61C19.94 20.61 21.22 19.33 21.22 17.72C21.22 16.92 20.93 16.11 20.36 15.5C19.77 14.93 18.96 14.64 18.14 14.64C17.34 14.64 16.53 14.93 15.95 15.5L13.23 12.78C14.72 11.39 15.67 9.42 15.67 7.22C15.67 6.5 15.57 5.81 15.39 5.16L21 1V3L16.81 5.88C16.89 6.31 16.94 6.76 16.94 7.22C16.94 9.89 15.83 12.29 14 13.83V21H12V13.83C10.17 12.29 9.06 9.89 9.06 7.22C9.06 6.76 9.11 6.31 9.19 5.88L5 3V1L10.61 5.16C10.43 5.81 10.33 6.5 10.33 7.22C10.33 9.42 11.28 11.39 12.77 12.78C12.14 13.08 11.47 13.28 10.75 13.39L8.89 11.53C8.96 11.19 9 10.85 9 10.5C9 9.67 8.67 8.89 8.08 8.3C7.47 7.69 6.69 7.36 5.86 7.36C5.06 7.36 4.25 7.69 3.67 8.3C3.06 8.89 2.73 9.67 2.73 10.5C2.73 11.33 3.06 12.11 3.67 12.7C4.25 13.31 5.06 13.64 5.89 13.64C6.25 13.64 6.58 13.6 6.92 13.53L8.78 15.39C8.67 16.11 8.47 16.78 8.17 17.41L5.45 14.69C5.02 14.26 4.47 14 3.89 14C3.09 14 2.28 14.33 1.7 14.94C1.09 15.53 0.76 16.31 0.76 17.14C0.76 17.97 1.09 18.75 1.7 19.36C2.28 19.97 3.09 20.3 3.92 20.3C4.47 20.3 5 20.08 5.42 19.69L8.14 17Z"/></svg>',
+            // Music Note
+            '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 3V13.55C11.41 13.21 10.73 13 10 13C7.79 13 6 14.79 6 17S7.79 21 10 21 14 19.21 14 17V7H18V3H12Z"/></svg>',
+            // Saxophone
+            '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12.5 1.5C12.5 2.33 11.83 3 11 3H10V4H11C11.83 4 12.5 4.67 12.5 5.5C12.5 6.33 11.83 7 11 7H10V8.29C13 9.11 15.29 11.4 16.11 14.39L18.21 16.5L19 15.7L22.7 19.4L19.4 22.7L15.7 19L16.5 18.21L14.39 16.11C11.4 15.29 9.11 13 8.29 10H7V11C7 11.83 6.33 12.5 5.5 12.5C4.67 12.5 4 11.83 4 11V10H3V11C3 11.83 2.33 12.5 1.5 12.5C0.67 12.5 0 11.83 0 11V10.5C0 9.67 0.67 9 1.5 9C2.33 9 3 9.67 3 10.5V9H4V8.5C4 7.67 4.67 7 5.5 7C6.33 7 7 7.67 7 8.5V9H8.29C9.11 6 11.4 3.71 14.39 2.89L16.5 0.79L17.29 1.59L18.09 0.79L21.79 4.5L18.5 7.79L14.79 4.09L15.59 3.29L13.5 1.18C13 1.34 12.5 1.5 12.5 1.5M13 16C14.66 16 16 14.66 16 13S14.66 10 13 10 10 11.34 10 13 11.34 16 13 16M13 12C13.55 12 14 12.45 14 13S13.55 14 13 14 12 13.55 12 13 12.45 12 13 12Z"/></svg>',
+            // Trumpet
+            '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 2H3C1.9 2 1 2.9 1 4V10C1 11.11 1.9 12 3 12H21C22.11 12 23 11.11 23 10V4C23 2.9 22.11 2 21 2M8 10H6V8H8V10M12 10H10V8H12V10M16 10H14V8H16V10M8 14C6.9 14 6 14.9 6 16V20C6 21.11 6.9 22 8 22H16C17.11 22 18 21.11 18 20V16C18 14.9 17.11 14 16 14H8M10 20H14V18H10V20Z"/></svg>'
+        ];
         
         // Create audio context for twinkling sound
         const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -150,51 +157,54 @@
             });
         }
 
-        function spawnBat() {
-            const bat = document.createElement('div');
-            bat.className = 'bat';
-            bat.textContent = '🦇';
+        function spawnMusicIcon() {
+            const musicIcon = document.createElement('div');
+            musicIcon.className = 'music-icon';
+            
+            // Pick random icon
+            const randomIcon = musicIcons[Math.floor(Math.random() * musicIcons.length)];
+            musicIcon.innerHTML = randomIcon;
             
             // Random trajectory
             const angle = Math.random() * Math.PI * 2;
             const distance = 200 + Math.random() * 300;
-            const batX = Math.cos(angle) * distance;
-            const batY = Math.sin(angle) * distance;
-            const batRot = Math.random() * 360 - 180;
+            const musicX = Math.cos(angle) * distance;
+            const musicY = Math.sin(angle) * distance;
+            const musicRot = Math.random() * 360 - 180;
             
-            bat.style.setProperty('--bat-x', `${batX}px`);
-            bat.style.setProperty('--bat-y', `${batY}px`);
-            bat.style.setProperty('--bat-rot', `${batRot}deg`);
+            musicIcon.style.setProperty('--music-x', `${musicX}px`);
+            musicIcon.style.setProperty('--music-y', `${musicY}px`);
+            musicIcon.style.setProperty('--music-rot', `${musicRot}deg`);
             
-            batContainer.appendChild(bat);
+            musicContainer.appendChild(musicIcon);
             
             // Remove after animation
             setTimeout(() => {
-                if (bat.parentNode) {
-                    bat.remove();
+                if (musicIcon.parentNode) {
+                    musicIcon.remove();
                 }
             }, 2500);
         }
 
-        function startBats() {
-            spawnBat();
-            batInterval = setInterval(spawnBat, 200);
+        function startMusic() {
+            spawnMusicIcon();
+            musicInterval = setInterval(spawnMusicIcon, 200);
         }
 
-        function stopBats() {
-            if (batInterval) {
-                clearInterval(batInterval);
-                batInterval = null;
+        function stopMusic() {
+            if (musicInterval) {
+                clearInterval(musicInterval);
+                musicInterval = null;
             }
         }
 
         playButton.addEventListener("mouseenter", () => {
             playTwinkle();
-            startBats();
+            startMusic();
         });
 
         playButton.addEventListener("mouseleave", () => {
-            stopBats();
+            stopMusic();
         });
 
         playButton.addEventListener("click", () => {
