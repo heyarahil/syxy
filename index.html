@@ -23,6 +23,8 @@
         }
         canvas {
             display: block;
+            -webkit-mask-image: radial-gradient(circle at center, transparent 0%, transparent 25%, black 45%, black 100%);
+            mask-image: radial-gradient(circle at center, transparent 0%, transparent 25%, black 45%, black 100%);
         }
 
         .play-button {
@@ -31,21 +33,17 @@
             left: 50%;
             transform: translate(-50%, -50%);
             z-index: 10;
-            padding: 3rem;
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
+            padding: 0;
+            background: transparent;
+            border: none;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s ease;
+            transition: transform 0.3s ease;
         }
 
         .play-button:hover {
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(15px);
             transform: translate(-50%, -50%) scale(1.05);
         }
 
