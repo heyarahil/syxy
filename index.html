@@ -71,6 +71,34 @@
             outline: none;
         }
 
+        .play-button.biting img {
+            animation: bite 1s ease-in-out forwards;
+        }
+
+        @keyframes bite {
+            0% {
+                transform: scaleY(1) translateY(0);
+            }
+            15% {
+                transform: scaleY(0.95) translateY(2%);
+            }
+            30% {
+                transform: scaleY(1.05) translateY(-2%);
+            }
+            50% {
+                transform: scaleY(0.7) translateY(0);
+            }
+            65% {
+                transform: scaleY(0.6) translateY(0);
+            }
+            80% {
+                transform: scaleY(0.65) translateY(0);
+            }
+            100% {
+                transform: scaleY(0.6) translateY(0);
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -80,9 +108,16 @@
     <script>
         const playButton = document.getElementById("play-button");
 
-        // Simple navigation only, no sound
-        playButton.addEventListener("click", () => {
-            window.location.href = "play.html";
+        // Bite animation then navigate
+        playButton.addEventListener("click", (e) => {
+            // Prevent default and add animation class
+            playButton.classList.add("biting");
+            playButton.style.pointerEvents = "none"; // Prevent multiple clicks
+            
+            // Navigate after 1 second
+            setTimeout(() => {
+                window.location.href = "play.html";
+            }, 1000);
         });
 
         const phrase = "Syxy ";
