@@ -30,28 +30,33 @@
             left: 50%;
             transform: translate(-50%, -50%);
             z-index: 10;
-            padding: 0;
-            font-size: clamp(5rem, 9vw, 11rem);
-            font-weight: 700;
-            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-            text-transform: lowercase;
-            letter-spacing: 0.08em;
-            color: rgba(255, 255, 255, 0.85);
-            background: transparent;
-            border: none;
+            padding: 1rem 1.5rem;
+            font-size: clamp(1.5rem, 3vw, 2.5rem);
+            font-weight: 400;
+            font-family: "Comforter Brush", cursive;
+            text-transform: none;
+            letter-spacing: 0.05em;
+            color: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            border-radius: 50px;
             cursor: pointer;
-            transition: color 160ms ease;
+            transition: all 220ms ease;
+            backdrop-filter: blur(8px);
         }
 
         .play-button:hover,
         .play-button:focus-visible {
-            color: #ff1e1e;
+            color: #fff;
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #fff;
+            transform: translate(-50%, -50%) scale(1.05);
             outline: none;
         }
     </style>
 </head>
 <body>
-    <button class="play-button" id="play-button">play.</button>
+    <button class="play-button" id="play-button">PLAY <3</button>
     <script>
         const playButton = document.getElementById("play-button");
         playButton.addEventListener("click", () => {
