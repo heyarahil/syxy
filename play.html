@@ -62,11 +62,21 @@
             filter: contrast(1.1) saturate(1.05);
             will-change: transform;
         }
+        .hero .video-fade {
+            position: absolute;
+            inset: 0;
+            background: black;
+            opacity: 0;
+            z-index: 1;
+            pointer-events: none;
+            transition: opacity 0.1s ease-out;
+        }
         .hero::after {
             content: "";
             position: absolute;
             inset: 0;
             background: linear-gradient(180deg, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.85) 90%);
+            z-index: 2;
         }
         .stack {
             padding: 3rem clamp(1.5rem, 6vw, 4rem) 4rem;
@@ -149,6 +159,7 @@
         <video autoplay muted loop playsinline preload="metadata">
             <source src="videos/syxy-hero-optimized.mp4" type="video/mp4">
         </video>
+        <div class="video-fade"></div>
     </section>
 
     <section class="socials">
@@ -210,6 +221,42 @@
     <div class="footer-note">
         COPYRIGHT SYXY
     </div>
+
+    <script>
+        // Video fade effect on scroll
+        (function() {
+            const hero = document.querySelector('.hero');
+            const videoFade = document.querySelector('.video-fade');
+            let ticking = false;
+
+            function updateVideoFade() {
+                const scrollY = window.scrollY || window.pageYOffset;
+                const heroHeight = hero.offsetHeight;
+                
+                // Calculate opacity: starts at 0, reaches 1 when scrolled past hero
+                const opacity = Math.min(scrollY / heroHeight, 1);
+                
+                videoFade.style.opacity = opacity;
+                ticking = false;
+            }
+
+            function requestTick() {
+                if (!ticking) {
+                    requestAnimationFrame(updateVideoFade);
+                    ticking = true;
+                }
+            }
+
+            // Listen to scroll events
+            window.addEventListener('scroll', requestTick, { passive: true });
+            
+            // Handle window resize
+            window.addEventListener('resize', requestTick, { passive: true });
+            
+            // Initial check
+            updateVideoFade();
+        })();
+    </script>
 
 </body>
 </html>
