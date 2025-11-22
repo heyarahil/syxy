@@ -65,7 +65,7 @@
         .hero .video-fade {
             position: absolute;
             inset: 0;
-            background: black;
+            background: linear-gradient(180deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.95) 50%, rgb(0,0,0) 100%);
             opacity: 0;
             z-index: 1;
             pointer-events: none;
@@ -234,7 +234,9 @@
                 const heroHeight = hero.offsetHeight;
                 
                 // Calculate opacity: starts at 0, reaches 1 when scrolled past hero
-                const opacity = Math.min(scrollY / heroHeight, 1);
+                // Using a power curve to make it fade darker more quickly
+                const scrollProgress = Math.min(scrollY / heroHeight, 1);
+                const opacity = Math.pow(scrollProgress, 0.7);
                 
                 videoFade.style.opacity = opacity;
                 ticking = false;
